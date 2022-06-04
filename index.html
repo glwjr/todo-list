@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial scale=1.0" />
+  <title>Todo List</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/bed57373ff.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="content">
+        <div id="header">
+            <h2 class="header">
+                <i class="fas fa-check-double"></i>Todo List
+            </h2>
+            <button id="menu-button"><i id="menu-bars" class="fas fa-bars"></i></button>
+        </div>
+        <div id="nav" class="nav">
+            <button class="sidebar" id="inbox"><i class="fas fa-inbox"></i>Inbox<i class="fas fa-x"></i></button>
+            <button class="sidebar" id="today"><i class="fas fa-calendar-day"></i>Today</button>
+            <button class="sidebar" id="this-week"><i class="fas fa-calendar-week"></i>This Week</button>
+            <div id="projects">
+                <h4 class="sidebar"><i class="fas fa-chevron-down"></i>Projects</h4>
+                <div id="stored-projects"></div>
+                <button class="sidebar" id="add-project"><i class="fas fa-plus"></i>Add Project</button>
+                <div id="add-project-form">
+                    <form>
+                        <input id="add-project-input" required>
+                        <div id="new-project-buttons">
+                            <button id="submit-project" type="submit">Add</button>
+                            <button id="cancel-project">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="main">
+            <h2 id="main-title" class="main-title">Inbox</h2>
+            <div id="todos-container"></div>
+            <div id="add-todo">
+                <button class="main" id="add-todo-button"><i class="fas fa-plus add-todo"></i>Add Todo</button>
+                <div id="add-todo-form">
+                    <form>
+                        <input id="todo-name-input" placeholder="What do you need to do?" required>
+                        <div id="todo-data-input">
+                            <input id="todo-date-input" type="date" required>
+                            <select name="status" id="todo-priority-input" required>
+                                <option selected disabled value="">Priority</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        <div id="todo-buttons">
+                            <button id="submit-todo" type="submit">Add</button>
+                            <button id="cancel-todo">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div id="footer">Made with ♥ by GW</div>
+    </div>
+   <script src="main.js"></script>
+</body>
+</html> 
