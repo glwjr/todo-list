@@ -6,14 +6,14 @@ class Todo {
         this.dueDate = dueDate;
         this.priority = priority;
     }
-};
+}
 
 class Project {
     constructor (name, todos) {
         this.name = name;
         this.todos = todos;
     }
-};
+}
 
 const todoApp = (() => {
 
@@ -29,8 +29,8 @@ const todoApp = (() => {
         updateLocalStorage();
     }
 
-    const removeProject = (item) => {
-        const projectIndex = projects.findIndex(project => project.name == item.name);
+    const removeProject = (selectedProject) => {
+        const projectIndex = projects.findIndex(project => project.name == selectedProject.name);
         if (projectIndex > -1) {
             projects.splice(projectIndex, 1);
         } else {
@@ -247,7 +247,7 @@ const UI = (() => {
     const submitTodoButton = document.getElementById("submit-todo");
     submitTodoButton.addEventListener("click", (e) => submitTodo(e));
 
-    const submitTodo = () => {
+    const submitTodo = (e) => {
         const todoIndex = getCurrentProject().todos.findIndex(todo => todo.name == todoNameInput.value);
 
         if (todoIndex > -1) {
