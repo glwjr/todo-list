@@ -73,23 +73,27 @@ const todoApp = (() => {
 })();
 
 const UI = (() => {
-    const nav = document.getElementById("nav");
+
+    // Menu & Navigation
+    
+    const menu = document.getElementById("menu");
     const menuButton = document.getElementById("menu-button");
+    const inboxButton = document.getElementById("inbox");
+    const todayButton = document.getElementById("today");
+    const thisWeekButton = document.getElementById("this-week");
+
     menuButton.addEventListener("click", () => toggleNav())
+    inboxButton.addEventListener("click", () => renderProjectTodos(todoApp.projects[0]))
+    todayButton.addEventListener("click", () => renderTodayTodos())
+    thisWeekButton.addEventListener("click", () => renderWeekTodos())
 
     const toggleNav = () => {
-        if(nav.className === "nav") {
-            nav.className += " responsive";
+        if(menu.className === "menu") {
+            menu.className += " responsive";
         } else {
-            nav.className = "nav";
+            menu.className = "menu";
         }
     }
-
-    const inboxButton = document.getElementById("inbox");
-    inboxButton.addEventListener("click", () => renderProjectTodos(todoApp.projects[0]))
-
-    const todayButton = document.getElementById("today");
-    todayButton.addEventListener("click", () => renderTodayTodos())
 
     const renderTodayTodos = () => {
         const projectTitle = document.querySelector(".main-title"); 
@@ -112,11 +116,6 @@ const UI = (() => {
         hideAddTodoButton();
     }
 
-    // This Week Button
-
-    const thisWeekButton = document.getElementById("this-week");
-    thisWeekButton.addEventListener("click", () => renderWeekTodos())
-
     const renderWeekTodos = () => {
         const projectTitle = document.querySelector(".main-title"); 
         const todosContainer = document.getElementById("todos-container");
@@ -137,18 +136,16 @@ const UI = (() => {
         hideAddTodoButton();
     }
 
-    // Add Project Form
+    // Project Form
 
     const projectForm = document.getElementById("add-project-form");
     const projectInput = document.getElementById("add-project-input");
-
     const addProjectButton = document.getElementById("add-project");
-    addProjectButton.addEventListener("click", () => showProjectForm())
-
     const submitProjectButton = document.getElementById("submit-project");
-    submitProjectButton.addEventListener("click", (e) => submitProject(e));
-
     const cancelProjectButton = document.getElementById("cancel-project");
+
+    addProjectButton.addEventListener("click", () => showProjectForm())
+    submitProjectButton.addEventListener("click", (e) => submitProject(e));
     cancelProjectButton.addEventListener("click", () => hideProjectForm())
 
     const showProjectForm = () => {
@@ -237,14 +234,15 @@ const UI = (() => {
     const todoNameInput = document.getElementById("todo-name-input");
     const todoPriorityInput = document.getElementById("todo-priority-input");
     const todoDateInput = document.getElementById("todo-date-input");
-
     const addTodoButton = document.getElementById("add-todo-button");
+    const submitTodoButton = document.getElementById("submit-todo");
+    const cancelTodoButton = document.getElementById("cancel-todo");
+
     addTodoButton.addEventListener("click", () => {
         showTodoForm();
         hideAddTodoButton();
     });
 
-    const submitTodoButton = document.getElementById("submit-todo");
     submitTodoButton.addEventListener("click", (e) => submitTodo(e));
 
     const submitTodo = (e) => {
@@ -265,7 +263,6 @@ const UI = (() => {
         hideTodoForm();
     }
 
-    const cancelTodoButton = document.getElementById("cancel-todo");
     cancelTodoButton.addEventListener("click", () => {
         hideTodoForm();
         showAddTodoButton();
