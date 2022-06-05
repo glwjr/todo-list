@@ -38,7 +38,7 @@ input, select {
     grid-template-columns: auto 1fr;
     grid-template-areas:
         "header header"
-        "nav main"
+        "menu main"
         "footer footer";
 }
 
@@ -79,14 +79,14 @@ button#menu-button {
     display: none;
 }
 
-/* Nav/Sidebar */
+/* Menu/Sidebar */
 
-.nav {
+.menu {
     overflow: scroll;
     background-color: var(--light-background);
     width: 30rem;
     padding: 3rem;
-    grid-area: nav;
+    grid-area: menu;
 }
 
 button.sidebar,
@@ -381,7 +381,7 @@ h2.main-title {
         grid-template-columns: auto;
         grid-template-areas:
             "header"
-            "nav" 
+            "menu" 
             "main"
             "footer";
     }
@@ -390,12 +390,12 @@ h2.main-title {
         height: auto;
     }
   
-    .nav {
+    .menu {
         width: 100%;
         display: none;
     }
 
-    .nav.responsive {
+    .menu.responsive {
         display: block;
     }
 }
