@@ -95,47 +95,6 @@ const UI = (() => {
         }
     }
 
-    const renderTodayTodos = () => {
-        const projectTitle = document.querySelector(".main-title"); 
-        const todosContainer = document.getElementById("todos-container");
-        let currentDate = format(new Date(), "yyyy-MM-dd");
-
-        projectTitle.innerHTML = "Today";
-        todosContainer.innerHTML = "";
-
-        todoApp.projects.forEach((project) => {
-            project.todos.forEach((todo) => {
-                if(todo.dueDate == currentDate){
-                    renderTodo(todo);
-                } else {
-                    return
-                }
-            })
-        })
-
-        hideAddTodoButton();
-    }
-
-    const renderWeekTodos = () => {
-        const projectTitle = document.querySelector(".main-title"); 
-        const todosContainer = document.getElementById("todos-container");
-
-        projectTitle.innerHTML = "This Week";
-        todosContainer.innerHTML = "";
-
-        todoApp.projects.forEach((project) => {
-            project.todos.forEach((todo) => {
-                if(isThisWeek(new Date(todo.dueDate)) == true) {
-                    renderTodo(todo);
-                } else {
-                    return
-                }
-            })
-        })
-
-        hideAddTodoButton();
-    }
-
     // Project Form
 
     const projectForm = document.getElementById("add-project-form");
@@ -238,12 +197,9 @@ const UI = (() => {
     const submitTodoButton = document.getElementById("submit-todo");
     const cancelTodoButton = document.getElementById("cancel-todo");
 
-    addTodoButton.addEventListener("click", () => {
-        showTodoForm();
-        hideAddTodoButton();
-    });
-
+    addTodoButton.addEventListener("click", () => showTodoForm());
     submitTodoButton.addEventListener("click", (e) => submitTodo(e));
+    cancelTodoButton.addEventListener("click", () => hideTodoForm())
 
     const submitTodo = (e) => {
         const todoIndex = getCurrentProject().todos.findIndex(todo => todo.name == todoNameInput.value);
@@ -263,11 +219,6 @@ const UI = (() => {
         hideTodoForm();
     }
 
-    cancelTodoButton.addEventListener("click", () => {
-        hideTodoForm();
-        showAddTodoButton();
-    })
-
     const getTodoFromInput = () => {
         const name = todoNameInput.value;
         const dueDate = todoDateInput.value;
@@ -286,6 +237,7 @@ const UI = (() => {
         todoDateInput.value = "";
         todoPriorityInput.value = "";
         todoForm.style.display = "none";
+        showAddTodoButton();
     }
 
     const hideAddTodoButton = () => {
@@ -295,6 +247,8 @@ const UI = (() => {
     const showAddTodoButton = () => {
         addTodoButton.style.display = "block";
     }
+
+    // Rendering Functions
 
     const renderTodo = (todo) => {
         const todosContainer = document.getElementById("todos-container");
@@ -338,8 +292,6 @@ const UI = (() => {
         })
     }
 
-    // Rendering Functions
-
     const renderProjectTodos = (project) => {
             const projectTitle = document.querySelector(".main-title"); 
             const todosContainer = document.getElementById("todos-container");
@@ -355,6 +307,47 @@ const UI = (() => {
             }
 
             showAddTodoButton();
+    }
+
+    const renderTodayTodos = () => {
+        const projectTitle = document.querySelector(".main-title"); 
+        const todosContainer = document.getElementById("todos-container");
+        let currentDate = format(new Date(), "yyyy-MM-dd");
+
+        projectTitle.innerHTML = "Today";
+        todosContainer.innerHTML = "";
+
+        todoApp.projects.forEach((project) => {
+            project.todos.forEach((todo) => {
+                if(todo.dueDate == currentDate){
+                    renderTodo(todo);
+                } else {
+                    return
+                }
+            })
+        })
+
+        hideAddTodoButton();
+    }
+
+    const renderWeekTodos = () => {
+        const projectTitle = document.querySelector(".main-title"); 
+        const todosContainer = document.getElementById("todos-container");
+
+        projectTitle.innerHTML = "This Week";
+        todosContainer.innerHTML = "";
+
+        todoApp.projects.forEach((project) => {
+            project.todos.forEach((todo) => {
+                if(isThisWeek(new Date(todo.dueDate)) == true) {
+                    renderTodo(todo);
+                } else {
+                    return
+                }
+            })
+        })
+
+        hideAddTodoButton();
     }
 
     const refreshProjects = () => {
