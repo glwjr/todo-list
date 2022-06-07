@@ -33,10 +33,10 @@ const todoApp = (() => {
         const projectIndex = projects.findIndex(project => project.name == selectedProject.name);
         if (projectIndex > -1) {
             projects.splice(projectIndex, 1);
+            updateLocalStorage();
         } else {
             return
         }
-        updateLocalStorage();
     }
 
     const addTodo = (todo) => {
@@ -51,10 +51,10 @@ const todoApp = (() => {
         const todoIndex = parentProject.todos.indexOf(selectedTodo);
         if (todoIndex > -1) {
             parentProject.todos.splice(todoIndex, 1);
+            updateLocalStorage();
         } else {
             return
         }
-        updateLocalStorage();
     }
 
     const updateLocalStorage = () => {
@@ -180,12 +180,6 @@ const UI = (() => {
             deleteButton.style.display = "none";
         }
     }
-
-    const getCurrentProject = () => {
-        const projectName = document.querySelector(".main-title").innerHTML;
-        const projectIndex = todoApp.projects.findIndex(project => project.name == projectName);
-        return todoApp.projects[projectIndex];
-    }
     
     // Add Todo Form 
 
@@ -240,16 +234,22 @@ const UI = (() => {
         showAddTodoButton();
     }
 
-    const hideAddTodoButton = () => {
-        addTodoButton.style.display = "none";
-    }
-
     const showAddTodoButton = () => {
         addTodoButton.style.display = "block";
     }
 
+    const hideAddTodoButton = () => {
+        addTodoButton.style.display = "none";
+    }
+
     // Rendering Functions
 
+    const getCurrentProject = () => {
+        const projectName = document.querySelector(".main-title").innerHTML;
+        const projectIndex = todoApp.projects.findIndex(project => project.name == projectName);
+        return todoApp.projects[projectIndex];
+    }
+    
     const renderTodo = (todo) => {
         const todosContainer = document.getElementById("todos-container");
         const todoDiv = document.createElement("div");
