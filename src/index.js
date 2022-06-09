@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import { format, isThisWeek, parseISO } from 'date-fns';
 import Todo from './todo';
 import Project from './project';
@@ -30,7 +31,8 @@ const todoApp = (() => {
   };
 
   const removeTodo = (selectedTodo) => {
-    const projectIndex = projects.findIndex((project) => project.todos.find((todo) => todo === selectedTodo));
+    const projectIndex = projects
+      .findIndex((project) => project.todos.find((todo) => todo === selectedTodo));
     const parentProject = projects[projectIndex];
     const todoIndex = parentProject.todos.indexOf(selectedTodo);
     if (todoIndex > -1) {
@@ -106,7 +108,8 @@ const UI = (() => {
       return;
     }
 
-    const projectIndex = todoApp.projects.findIndex((project) => project.name === projectInput.value);
+    const projectIndex = todoApp.projects
+      .findIndex((project) => project.name === projectInput.value);
     if (projectIndex > -1) {
       alert('A project with this name already exists. Please enter a different name.');
       e.preventDefault();
