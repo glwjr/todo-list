@@ -41,19 +41,19 @@
                 <button class="main" id="add-todo-button"><i class="fas fa-plus add-todo"></i>Add Todo</button>
                 <div id="add-todo-form">
                     <form>
-                        <input id="todo-name-input" placeholder="What do you need to do?" required>
-                        <div id="todo-data-input">
-                            <input id="todo-date-input" type="date" required>
-                            <select name="status" id="todo-priority-input" required>
+                        <input class="todo-name-input" id="todo-name-input" placeholder="What do you need to do?" required>
+                        <div class="todo-data-input" id="todo-data-input">
+                            <input class="todo-date-input" id="todo-date-input" type="date">
+                            <select name="status" class="todo-priority-input" id="todo-priority-input" required>
                                 <option selected disabled value="">Priority</option>
                                 <option value="High">High</option>
                                 <option value="Medium">Medium</option>
                                 <option value="Low">Low</option>
                             </select>
                         </div>
-                        <div id="todo-buttons">
-                            <button id="submit-todo" type="submit">Add</button>
-                            <button id="cancel-todo">Cancel</button>
+                        <div class="todo-buttons" id="todo-buttons">
+                            <button class="submit-todo" id="submit-todo" type="submit">Add</button>
+                            <button class="cancel-todo" id="cancel-todo">Cancel</button>
                         </div>
                     </form>
                 </div>
