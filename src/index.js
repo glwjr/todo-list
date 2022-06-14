@@ -1,66 +1,20 @@
-/* eslint-disable no-use-before-define */
 import { format, isThisWeek, parseISO } from 'date-fns';
 import Todo from './todo';
 import Project from './project';
+import {
+  projects,
+  addTodo,
+  editTodo,
+  removeTodo,
+  addProject,
+  editProject,
+  removeProject,
+  checkLocalStorage,
+} from './todoApp';
 
-const todoApp = (() => {
-  let projects = [
-    {
-      name: 'Inbox',
-      todos: [],
-    },
-  ];
+// Menu & Navigation
 
-  const addProject = (newProject) => {
-    projects.push(newProject);
-    updateLocalStorage();
-  };
-
-  const removeProject = (selectedProject) => {
-    const projectIndex = projects.findIndex((project) => project.name === selectedProject.name);
-    if (projectIndex > -1) {
-      projects.splice(projectIndex, 1);
-      updateLocalStorage();
-    }
-  };
-
-  const addTodo = (todo) => {
-    const projectIndex = projects.findIndex((project) => project === UI.getCurrentProject());
-    projects[projectIndex].todos.push(todo);
-    updateLocalStorage();
-  };
-
-  const removeTodo = (selectedTodo) => {
-    const projectIndex = projects
-      .findIndex((project) => project.todos.find((todo) => todo === selectedTodo));
-    const parentProject = projects[projectIndex];
-    const todoIndex = parentProject.todos.indexOf(selectedTodo);
-    if (todoIndex > -1) {
-      parentProject.todos.splice(todoIndex, 1);
-      updateLocalStorage();
-    }
-  };
-
-  const updateLocalStorage = () => {
-    localStorage.setItem('projects', JSON.stringify(projects));
-  };
-
-  const checkLocalStorage = () => {
-    if (localStorage.getItem('projects')) {
-      projects = JSON.parse(localStorage.getItem('projects'));
-    }
-  };
-
-  checkLocalStorage();
-
-  return {
-    projects, addTodo, removeTodo, addProject, removeProject,
-  };
-})();
-
-const UI = (() => {
-  // Menu & Navigation
-
+const initMenu = () => {
   const menu = document.getElementById('menu');
   const menuButton = document.getElementById('menu-button');
   const inboxButton = document.getElementById('inbox');
@@ -68,7 +22,7 @@ const UI = (() => {
   const thisWeekButton = document.getElementById('this-week');
 
   menuButton.addEventListener('click', () => toggleNav());
-  inboxButton.addEventListener('click', () => renderProjectTodos(todoApp.projects[0]));
+  inboxButton.addEventListener('click', () => renderProjectTodos(projects[0]));
   todayButton.addEventListener('click', () => renderTodayTodos());
   thisWeekButton.addEventListener('click', () => renderWeekTodos());
 
@@ -79,28 +33,39 @@ const UI = (() => {
       menu.className = 'menu';
     }
   };
+};
 
-  // Project Form
+// Project Button & Forms
 
+const addProjectButton = document.getElementById('add-project');
+addProjectButton.addEventListener('click', () => initNewProjectForm());
+
+const showAddProjectButton = () => {
+  addProjectButton.style.display = 'block';
+};
+
+const hideAddProjectButton = () => {
+  addProjectButton.style.display = 'none';
+};
+
+const initNewProjectForm = () => {
   const projectForm = document.getElementById('add-project-form');
   const projectInput = document.getElementById('add-project-input');
-  const addProjectButton = document.getElementById('add-project');
   const submitProjectButton = document.getElementById('submit-project');
   const cancelProjectButton = document.getElementById('cancel-project');
 
-  addProjectButton.addEventListener('click', () => showProjectForm());
   submitProjectButton.addEventListener('click', (e) => submitProject(e));
   cancelProjectButton.addEventListener('click', () => hideProjectForm());
 
   const showProjectForm = () => {
     projectForm.style.display = 'block';
-    addProjectButton.style.display = 'none';
+    hideAddProjectButton();
   };
 
   const hideProjectForm = () => {
     projectInput.value = '';
     projectForm.style.display = 'none';
-    addProjectButton.style.display = 'block';
+    showAddProjectButton();
   };
 
   const submitProject = (e) => {
@@ -108,7 +73,7 @@ const UI = (() => {
       return;
     }
 
-    const projectIndex = todoApp.projects
+    const projectIndex = projects
       .findIndex((project) => project.name === projectInput.value);
     if (projectIndex > -1) {
       alert('A project with this name already exists. Please enter a different name.');
@@ -116,7 +81,7 @@ const UI = (() => {
       return;
     }
 
-    todoApp.addProject(getProjectFromInput());
+    addProject(getProjectFromInput());
     renderProjectButton(getProjectFromInput());
     renderProjectTodos(getProjectFromInput());
     hideProjectForm();
@@ -127,57 +92,93 @@ const UI = (() => {
     return new Project(projectName, []);
   };
 
-  const renderProjectButton = (project) => {
-    const projectIndex = todoApp.projects.findIndex((item) => item.name === project.name);
-    const storedProjects = document.getElementById('stored-projects');
-    const projectButton = document.createElement('button');
-    const deleteButton = document.createElement('i');
+  showProjectForm();
+};
 
-    projectButton.classList.add('project-title');
-    deleteButton.classList.add('fas');
-    deleteButton.classList.add('fa-times');
+const initEditProjectForm = (oldProject, projectDiv, projectButton) => {
+  const editProjectForm = document.createElement('div');
+  const formWrap = document.createElement('form');
+  const projectInput = document.createElement('input');
+  const editProjectButtons = document.createElement('div');
+  const submitButton = document.createElement('button');
+  const cancelButton = document.createElement('button');
 
-    projectButton.innerHTML = `<i class="fas fa-circle"></i>${project.name}`;
+  editProjectForm.classList.add('edit-project-form');
+  projectInput.classList.add('edit-project-input');
+  editProjectButtons.classList.add('edit-project-buttons');
+  submitButton.classList.add('submit-project');
+  cancelButton.classList.add('cancel-project');
 
-    storedProjects.appendChild(projectButton);
-    projectButton.appendChild(deleteButton);
+  projectInput.setAttribute('required', '');
+  submitButton.setAttribute('type', 'submit');
 
-    projectButton.addEventListener('click', () => renderProjectTodos(todoApp.projects[projectIndex]));
-    projectButton.addEventListener('mouseenter', () => showProjectDeleteButton());
-    projectButton.addEventListener('mouseleave', () => hideProjectDeleteButton());
+  submitButton.innerHTML = 'Submit';
+  cancelButton.innerHTML = 'Cancel';
 
-    deleteButton.addEventListener('click', (e) => {
-      if (project.name === getCurrentProject().name) {
-        todoApp.removeProject(project);
-        renderTodoApp();
-      } else {
-        todoApp.removeProject(project);
-        refreshProjects();
-      }
+  projectInput.value = oldProject.name;
 
-      e.stopPropagation();
-    });
+  projectDiv.appendChild(editProjectForm);
+  editProjectForm.appendChild(formWrap);
+  formWrap.appendChild(projectInput);
+  formWrap.appendChild(editProjectButtons);
+  editProjectButtons.appendChild(submitButton);
+  editProjectButtons.appendChild(cancelButton);
 
-    const showProjectDeleteButton = () => {
-      deleteButton.style.display = 'block';
-    };
+  submitButton.addEventListener('click', (e) => submitEditedProject(e, oldProject, projectInput.value));
+  cancelButton.addEventListener('click', (e) => hideEditProjectForm(e));
 
-    const hideProjectDeleteButton = () => {
-      deleteButton.style.display = 'none';
-    };
+  const submitEditedProject = (e, originalProject, newProjectName) => {
+    editProject(originalProject, newProjectName);
+    renderAllProjectButtons();
+    renderProjectTodos(originalProject);
+    hideEditProjectForm(e);
   };
 
-  // Add Todo Form
+  const hideEditProjectForm = (e) => {
+    e.preventDefault();
+    editProjectForm.style.display = 'none';
+    projectButton.style.display = 'block';
+    showAddProjectButton();
+    renderProjectTodos(oldProject);
+  };
 
+  const hideProjectButton = () => {
+    projectButton.style.display = 'none';
+  };
+
+  hideProjectButton();
+  hideAddProjectButton();
+};
+
+const getCurrentProject = () => {
+  const projectName = document.querySelector('.main-title').innerHTML;
+  const projectIndex = projects.findIndex((project) => project.name === projectName);
+  return projects[projectIndex];
+};
+
+// Todo Button & Forms
+
+const addTodoButton = document.getElementById('add-todo-button');
+addTodoButton.addEventListener('click', () => initNewTodoForm());
+
+const showAddTodoButton = () => {
+  addTodoButton.style.display = 'block';
+};
+
+const hideAddTodoButton = () => {
+  addTodoButton.style.display = 'none';
+};
+
+const initNewTodoForm = () => {
   const todoForm = document.getElementById('add-todo-form');
   const todoNameInput = document.getElementById('todo-name-input');
   const todoPriorityInput = document.getElementById('todo-priority-input');
   const todoDateInput = document.getElementById('todo-date-input');
-  const addTodoButton = document.getElementById('add-todo-button');
   const submitTodoButton = document.getElementById('submit-todo');
   const cancelTodoButton = document.getElementById('cancel-todo');
 
-  addTodoButton.addEventListener('click', () => showTodoForm());
+  todoForm.style.display = 'block';
+
   submitTodoButton.addEventListener('click', (e) => submitTodo(e));
   cancelTodoButton.addEventListener('click', () => hideTodoForm());
 
@@ -192,11 +193,11 @@ const UI = (() => {
       return;
     }
 
-    if (todoNameInput.value === '' || todoDateInput.value === '' || todoPriorityInput.value === '') {
+    if (todoNameInput.value === '' || todoPriorityInput.value === '') {
       return;
     }
 
-    todoApp.addTodo(getTodoFromInput());
+    addTodo(getTodoFromInput(), getCurrentProject());
     renderProjectTodos(getCurrentProject());
     hideTodoForm();
   };
@@ -209,11 +210,6 @@ const UI = (() => {
     return new Todo(name, dueDate, priority);
   };
 
-  const showTodoForm = () => {
-    todoForm.style.display = 'block';
-    hideAddTodoButton();
-  };
-
   const hideTodoForm = () => {
     todoNameInput.value = '';
     todoDateInput.value = '';
@@ -222,148 +218,295 @@ const UI = (() => {
     showAddTodoButton();
   };
 
-  const showAddTodoButton = () => {
-    addTodoButton.style.display = 'block';
-  };
+  hideAddTodoButton();
+};
 
-  const hideAddTodoButton = () => {
-    addTodoButton.style.display = 'none';
-  };
+const initEditTodoForm = (selectedTodo, todoWrap, todoDiv) => {
+  const editTodoDiv = document.createElement('div');
+  const editTodoForm = document.createElement('div');
+  const formWrap = document.createElement('form');
+  const todoNameInput = document.createElement('input');
+  const todoDataInput = document.createElement('div');
+  const todoPriorityInput = document.createElement('select');
+  const todoDateInput = document.createElement('input');
+  const todoButtons = document.createElement('div');
+  const submitTodoButton = document.createElement('button');
+  const cancelTodoButton = document.createElement('button');
 
-  // Rendering Functions
+  editTodoDiv.classList.add('edit-todo');
+  editTodoForm.classList.add('edit-todo-form');
+  todoNameInput.classList.add('todo-name-input');
+  todoDataInput.classList.add('todo-data-input');
+  todoDateInput.classList.add('todo-date-input');
+  todoPriorityInput.classList.add('todo-priority-input');
+  todoButtons.classList.add('todo-buttons');
+  submitTodoButton.classList.add('submit-todo');
+  cancelTodoButton.classList.add('cancel-todo');
 
-  const getCurrentProject = () => {
-    const projectName = document.querySelector('.main-title').innerHTML;
-    const projectIndex = todoApp.projects.findIndex((project) => project.name === projectName);
-    return todoApp.projects[projectIndex];
-  };
+  todoDateInput.setAttribute('type', 'date');
+  todoDateInput.setAttribute('required', '');
+  todoPriorityInput.setAttribute('name', 'status');
+  todoPriorityInput.setAttribute('required', '');
 
-  const renderTodo = (todo) => {
-    const todosContainer = document.getElementById('todos-container');
-    const todoDiv = document.createElement('div');
-    const circle = document.createElement('i');
-    const todoContent = document.createElement('div');
-    const todoData = document.createElement('div');
-    const todoDate = document.createElement('div');
-    const todoPriority = document.createElement('div');
+  todoDiv.style.display = 'none';
+  editTodoForm.style.display = 'block';
 
-    todoDiv.classList.add('todo');
-    circle.classList.add('far');
-    circle.classList.add('fa-circle');
-    circle.classList.add('todo-circle');
-    todoContent.classList.add('todo-content');
-    todoData.classList.add('todo-data');
-    todoDate.classList.add('todo-date');
-    todoPriority.classList.add('todo-priority');
+  todoPriorityInput.innerHTML = `
+  <option selected disabled value="">Priority</option>
+  <option value="High">High</option>
+  <option value="Medium">Medium</option>
+  <option value="Low">Low</option>`;
 
-    todoContent.innerHTML = `${todo.name}`;
-    todoDate.innerHTML = `Due ${format(parseISO(todo.dueDate), 'PPPP')}`;
-    todoPriority.innerHTML = `${todo.priority} Priority`;
+  submitTodoButton.innerText = 'Submit';
+  cancelTodoButton.innerText = 'Cancel';
 
-    todosContainer.appendChild(todoDiv);
-    todoDiv.appendChild(circle);
-    todoDiv.appendChild(todoContent);
-    todoDiv.appendChild(todoData);
-    todoData.appendChild(todoDate);
-    todoData.appendChild(todoPriority);
+  todoWrap.appendChild(editTodoDiv);
+  editTodoDiv.appendChild(editTodoForm);
+  editTodoForm.appendChild(formWrap);
+  formWrap.appendChild(todoNameInput);
+  formWrap.appendChild(todoDataInput);
+  todoDataInput.appendChild(todoDateInput);
+  todoDataInput.appendChild(todoPriorityInput);
+  formWrap.appendChild(todoButtons);
+  todoButtons.appendChild(submitTodoButton);
+  todoButtons.appendChild(cancelTodoButton);
 
-    circle.addEventListener('click', () => {
-      todoApp.removeTodo(todo);
+  todoNameInput.value = selectedTodo.name;
+  todoDateInput.value = selectedTodo.dueDate;
+  todoPriorityInput.value = selectedTodo.priority;
 
-      if (document.querySelector('.main-title').innerHTML === 'Today') {
-        renderTodayTodos();
-      } else if (document.querySelector('.main-title').innerHTML === 'This Week') {
-        renderWeekTodos();
-      } else {
-        renderProjectTodos(getCurrentProject());
-      }
-    });
-  };
+  submitTodoButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    editTodo(
+      selectedTodo,
+      todoNameInput.value,
+      todoDateInput.value,
+      todoPriorityInput.value,
+    );
 
-  const renderProjectTodos = (project) => {
-    const projectTitle = document.querySelector('.main-title');
-    const todosContainer = document.getElementById('todos-container');
-    const { todos } = project;
-    projectTitle.innerHTML = project.name;
-    todosContainer.innerHTML = '';
+    hideEditTodoForm();
 
-    if (todos !== '') {
-      todos.forEach((todo) => renderTodo(todo));
+    if (document.querySelector('#main-title').innerHTML === 'Today') {
+      renderTodayTodos();
+    } else if (document.querySelector('#main-title').innerHTML === 'This Week') {
+      renderWeekTodos();
     } else {
-      return;
+      renderProjectTodos(getCurrentProject());
     }
+  });
 
+  cancelTodoButton.addEventListener('click', () => hideEditTodoForm());
+
+  const hideEditTodoForm = () => {
+    todoNameInput.value = '';
+    todoDateInput.value = '';
+    todoPriorityInput.value = '';
+    editTodoDiv.style.display = 'none';
+    todoDiv.style.display = 'grid';
     showAddTodoButton();
   };
 
-  const renderTodayTodos = () => {
-    const projectTitle = document.querySelector('.main-title');
-    const todosContainer = document.getElementById('todos-container');
-    const currentDate = format(new Date(), 'yyyy-MM-dd');
+  hideAddTodoButton();
+};
 
-    projectTitle.innerHTML = 'Today';
-    todosContainer.innerHTML = '';
+const markTodoAsDone = (todo) => {
+  removeTodo(todo);
 
-    todoApp.projects.forEach((project) => {
-      project.todos.forEach((todo) => {
-        if (todo.dueDate === currentDate) {
-          renderTodo(todo);
-        }
-      });
-    });
+  if (document.querySelector('#main-title').innerHTML === 'Today') {
+    renderTodayTodos();
+  } else if (document.querySelector('#main-title').innerHTML === 'This Week') {
+    renderWeekTodos();
+  } else {
+    renderProjectTodos(getCurrentProject());
+  }
+};
 
-    hideAddTodoButton();
+const renderTodo = (todo) => {
+  const todosContainer = document.getElementById('todos-container');
+  const todoWrap = document.createElement('div');
+  const todoDiv = document.createElement('div');
+  const circle = document.createElement('i');
+  const todoContent = document.createElement('div');
+  const todoName = document.createElement('div');
+  const editButton = document.createElement('i');
+  const todoData = document.createElement('div');
+  const todoDate = document.createElement('div');
+  const todoPriority = document.createElement('div');
+
+  todoDiv.classList.add('todo');
+  todoContent.classList.add('todo-content');
+  todoName.classList.add('todo-name');
+  todoData.classList.add('todo-data');
+  todoDate.classList.add('todo-date');
+  todoPriority.classList.add('todo-priority');
+  circle.classList.add('far');
+  circle.classList.add('fa-circle');
+  circle.classList.add('todo-circle');
+  editButton.classList.add('fas');
+  editButton.classList.add('fa-edit');
+  editButton.classList.add('edit-button');
+
+  todoName.innerHTML = `${todo.name}`;
+
+  if (todo.dueDate === '') {
+    todoDate.innerHTML = 'No Due Date';
+  } else {
+    todoDate.innerHTML = `Due ${format(parseISO(todo.dueDate), 'PPPP')}`;
+  }
+  todoPriority.innerHTML = `${todo.priority} Priority`;
+
+  todosContainer.appendChild(todoWrap);
+  todoWrap.appendChild(todoDiv);
+  todoDiv.appendChild(circle);
+  todoDiv.appendChild(todoContent);
+  todoContent.appendChild(todoName);
+  todoContent.appendChild(editButton);
+  todoDiv.appendChild(todoData);
+  todoData.appendChild(todoDate);
+  todoData.appendChild(todoPriority);
+
+  circle.addEventListener('click', () => markTodoAsDone(todo));
+  todoDiv.addEventListener('mouseover', () => showEditButton());
+  todoDiv.addEventListener('mouseout', () => hideEditButton());
+  editButton.addEventListener('click', () => initEditTodoForm(todo, todoWrap, todoDiv));
+
+  const showEditButton = () => {
+    editButton.style.display = 'block';
   };
 
-  const renderWeekTodos = () => {
-    const projectTitle = document.querySelector('.main-title');
-    const todosContainer = document.getElementById('todos-container');
+  const hideEditButton = () => {
+    editButton.style.display = 'none';
+  };
+};
 
-    projectTitle.innerHTML = 'This Week';
-    todosContainer.innerHTML = '';
+const renderProjectButton = (project) => {
+  const projectIndex = projects.findIndex((item) => item.name === project.name);
+  const storedProjects = document.getElementById('stored-projects');
+  const projectButtonDiv = document.createElement('div');
+  const projectButton = document.createElement('button');
+  const deleteButton = document.createElement('i');
 
-    todoApp.projects.forEach((project) => {
-      project.todos.forEach((todo) => {
-        if (isThisWeek(new Date(todo.dueDate)) === true) {
-          renderTodo(todo);
-        }
-      });
-    });
+  projectButtonDiv.classList.add('project-button-div');
+  projectButton.classList.add('project-title');
+  deleteButton.classList.add('fas');
+  deleteButton.classList.add('fa-times');
 
-    hideAddTodoButton();
+  projectButton.innerHTML = `<i class="fas fa-circle"></i>${project.name}`;
+
+  storedProjects.appendChild(projectButtonDiv);
+  projectButtonDiv.appendChild(projectButton);
+  projectButton.appendChild(deleteButton);
+
+  projectButton.addEventListener('click', () => renderProjectTodos(projects[projectIndex]));
+  projectButton.addEventListener('dblclick', () => initEditProjectForm(project, projectButtonDiv, projectButton));
+  projectButton.addEventListener('mouseenter', () => showProjectDeleteButton());
+  projectButton.addEventListener('mouseleave', () => hideProjectDeleteButton());
+
+  deleteButton.addEventListener('click', (e) => {
+    if (project.name === getCurrentProject().name) {
+      removeProject(project);
+      renderTodoApp();
+    } else {
+      removeProject(project);
+      renderAllProjectButtons();
+    }
+
+    e.stopPropagation();
+  });
+
+  const showProjectDeleteButton = () => {
+    deleteButton.style.display = 'block';
   };
 
-  const refreshProjects = () => {
-    const storedProjects = document.getElementById('stored-projects');
-    storedProjects.innerHTML = '';
-
-    todoApp.projects.forEach((project) => {
-      if (project.name !== 'Inbox') {
-        renderProjectButton(project);
-      }
-    });
+  const hideProjectDeleteButton = () => {
+    deleteButton.style.display = 'none';
   };
+};
 
-  const renderTodoApp = () => {
-    const title = document.getElementById('main-title');
-    const todosContainer = document.getElementById('todos-container');
-    const storedProjects = document.getElementById('stored-projects');
-    const { todos } = todoApp.projects[0];
+const renderAllProjectButtons = () => {
+  const storedProjects = document.getElementById('stored-projects');
+  storedProjects.innerHTML = '';
 
-    title.innerHTML = todoApp.projects[0].name;
-    todosContainer.innerHTML = '';
-    storedProjects.innerHTML = '';
+  projects.forEach((project) => {
+    if (project.name !== 'Inbox') {
+      renderProjectButton(project);
+    }
+  });
+};
 
+const renderProjectTodos = (project) => {
+  const projectTitle = document.querySelector('.main-title');
+  const todosContainer = document.getElementById('todos-container');
+  const { todos } = project;
+  projectTitle.innerHTML = project.name;
+  todosContainer.innerHTML = '';
+
+  if (todos !== '') {
     todos.forEach((todo) => renderTodo(todo));
+  } else {
+    return;
+  }
 
-    todoApp.projects.forEach((project) => {
-      if (project.name !== 'Inbox') {
-        renderProjectButton(project);
+  showAddTodoButton();
+};
+
+const renderTodayTodos = () => {
+  const projectTitle = document.querySelector('.main-title');
+  const todosContainer = document.getElementById('todos-container');
+  const currentDate = format(new Date(), 'yyyy-MM-dd');
+
+  projectTitle.innerHTML = 'Today';
+  todosContainer.innerHTML = '';
+
+  projects.forEach((project) => {
+    project.todos.forEach((todo) => {
+      if (todo.dueDate === currentDate) {
+        renderTodo(todo);
       }
     });
-  };
+  });
 
-  renderTodoApp();
+  hideAddTodoButton();
+};
 
-  return { getCurrentProject };
-})();
+const renderWeekTodos = () => {
+  const projectTitle = document.querySelector('.main-title');
+  const todosContainer = document.getElementById('todos-container');
+
+  projectTitle.innerHTML = 'This Week';
+  todosContainer.innerHTML = '';
+
+  projects.forEach((project) => {
+    project.todos.forEach((todo) => {
+      if (isThisWeek(new Date(todo.dueDate)) === true) {
+        renderTodo(todo);
+      }
+    });
+  });
+
+  hideAddTodoButton();
+};
+
+const renderTodoApp = () => {
+  checkLocalStorage();
+  initMenu();
+
+  const title = document.getElementById('main-title');
+  const todosContainer = document.getElementById('todos-container');
+  const storedProjects = document.getElementById('stored-projects');
+  const { todos } = projects[0];
+
+  title.innerHTML = projects[0].name;
+  todosContainer.innerHTML = '';
+  storedProjects.innerHTML = '';
+
+  todos.forEach((todo) => renderTodo(todo));
+
+  projects.forEach((project) => {
+    if (project.name !== 'Inbox') {
+      renderProjectButton(project);
+    }
+  });
+};
+
+renderTodoApp();
