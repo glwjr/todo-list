@@ -35,7 +35,7 @@ const initMenu = () => {
   };
 };
 
-// Project Button & Forms
+// Add Project Button & Forms
 
 const addProjectButton = document.getElementById('add-project');
 addProjectButton.addEventListener('click', () => initNewProjectForm());
@@ -150,13 +150,15 @@ const initEditProjectForm = (oldProject, projectDiv, projectButton) => {
   hideAddProjectButton();
 };
 
+// Get Current Displayed Project
+
 const getCurrentProject = () => {
   const projectName = document.querySelector('.main-title').innerHTML;
   const projectIndex = projects.findIndex((project) => project.name === projectName);
   return projects[projectIndex];
 };
 
-// Todo Button & Forms
+// Add Todo Button & Forms
 
 const addTodoButton = document.getElementById('add-todo-button');
 addTodoButton.addEventListener('click', () => initNewTodoForm());
@@ -309,6 +311,8 @@ const initEditTodoForm = (selectedTodo, todoWrap, todoDiv) => {
   hideAddTodoButton();
 };
 
+// Mark Todo As Done & Remove It
+
 const markTodoAsDone = (todo) => {
   removeTodo(todo);
 
@@ -320,6 +324,8 @@ const markTodoAsDone = (todo) => {
     renderProjectTodos(getCurrentProject());
   }
 };
+
+// Rendering Functions
 
 const renderTodo = (todo) => {
   const todosContainer = document.getElementById('todos-container');
