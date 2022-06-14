@@ -437,12 +437,11 @@ const renderAllProjectButtons = () => {
 const renderProjectTodos = (project) => {
   const projectTitle = document.querySelector('.main-title');
   const todosContainer = document.getElementById('todos-container');
-  const { todos } = project;
   projectTitle.innerHTML = project.name;
   todosContainer.innerHTML = '';
 
-  if (todos !== '') {
-    todos.forEach((todo) => renderTodo(todo));
+  if (project.todos !== '') {
+    project.todos.forEach((todo) => renderTodo(todo));
   } else {
     return;
   }
@@ -487,26 +486,22 @@ const renderWeekTodos = () => {
   hideAddTodoButton();
 };
 
+const renderInbox = () => {
+  const projectTitle = document.getElementById('main-title');
+  const todosContainer = document.getElementById('todos-container');
+  const inboxTodos = projects[0].todos;
+
+  projectTitle.innerHTML = projects[0].name;
+  todosContainer.innerHTML = '';
+
+  inboxTodos.forEach((todo) => renderTodo(todo));
+};
+
 const renderTodoApp = () => {
   checkLocalStorage();
   initMenu();
-
-  const title = document.getElementById('main-title');
-  const todosContainer = document.getElementById('todos-container');
-  const storedProjects = document.getElementById('stored-projects');
-  const { todos } = projects[0];
-
-  title.innerHTML = projects[0].name;
-  todosContainer.innerHTML = '';
-  storedProjects.innerHTML = '';
-
-  todos.forEach((todo) => renderTodo(todo));
-
-  projects.forEach((project) => {
-    if (project.name !== 'Inbox') {
-      renderProjectButton(project);
-    }
-  });
+  renderAllProjectButtons();
+  renderInbox();
 };
 
 renderTodoApp();
