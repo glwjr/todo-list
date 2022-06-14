@@ -21,12 +21,12 @@ const initMenu = () => {
   const todayButton = document.getElementById('today');
   const thisWeekButton = document.getElementById('this-week');
 
-  menuButton.addEventListener('click', () => toggleNav());
+  menuButton.addEventListener('click', () => toggleMenu());
   inboxButton.addEventListener('click', () => renderProjectTodos(projects[0]));
   todayButton.addEventListener('click', () => renderTodayTodos());
   thisWeekButton.addEventListener('click', () => renderWeekTodos());
 
-  const toggleNav = () => {
+  const toggleMenu = () => {
     if (menu.className === 'menu') {
       menu.className += ' responsive';
     } else {
